@@ -31,6 +31,7 @@ define('PLANNING_VERSION', '1.0');
 define('PLANNING_AUTHOR', 'AntoineLemarchand');
 define('PLANNING_HOMEPAGE', 'https://github.com/AntoineLemarchand/planning');
 
+use Glpi\Plugin\Hooks;
 
 /**
  * Define Name,Version,Author... of the plugin
@@ -86,9 +87,22 @@ function plugin_planning_check_config(): bool {
 function plugin_init_planning(): void {
     global $PLUGIN_HOOKS;
 
-    $PLUGIN_HOOKS['csrf_compliant']['planning'] = true;
+    
+    // Register class
+    Plugin::registerClass(PluginPlanningPlanning::class);
+    
     // Declaration des HOOKS
+    $PLUGIN_HOOKS['csrf_compliant']['planning'] = true;
     if (Session::haveRight("profile", UPDATE)) {    
         $PLUGIN_HOOKS['menu_toadd']['planning'] = ['helpdesk' => array(PluginPlanningConfig::class)];
     }
+
+    // js scripts
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/core/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/daygrid/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/timegrid/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/interaction/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/list/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'node-modules/@fullcalendar/rrule/main.js';
+    $PLUGIN_HOOKS['add_javascript']['planning'][] = 'js/planning.js';
 }

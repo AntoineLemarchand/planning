@@ -41,7 +41,7 @@ class PluginPlanningConfig extends CommonDBTM {
      * @return string
      */
     static function getTypeName($nb = 0) {
-        return __("Translation editor", 'edittraduction');
+        return __("Planning", 'planning');
     }
     
     /**
@@ -53,9 +53,9 @@ class PluginPlanningConfig extends CommonDBTM {
     {
         $menu = array();
 
-        $menu['title'] = "Planning";
+        $menu['title'] = self::getTypeName();
+        $menu['icon'] = "fa-fw far fa-calendar-alt";
         $menu['page'] = "/plugins/planning/front/planning.php";
-        $menu['icon']  = "fa-fw far fa-calendar-alt";
         return $menu;
     }
 }

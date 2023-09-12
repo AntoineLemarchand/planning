@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ---------------------------------------------------------------------
  * ITSM-NG
@@ -30,7 +31,8 @@
  * ---------------------------------------------------------------------
  */
 
-include ('../../../inc/includes.php');
+include('../../../inc/includes.php');
+include('../inc/planning.class.php');
 
 if (!isset($_GET['genical'])) {
    Session::checkRight("planning", READ);
@@ -38,7 +40,8 @@ if (!isset($_GET['genical'])) {
 
 if (!isset($_GET["uID"])) {
    if (($uid = Session::getLoginUserID())
-       && !Session::haveRight("planning", Planning::READALL)) {
+      && !Session::haveRight("planning", PluginPlanningPlanning::READALL)
+   ) {
       $_GET["uID"] = $uid;
    } else {
       $_GET["uID"] = 0;
@@ -57,9 +60,9 @@ if (!isset($_GET["limititemtype"])) {
 if (isset($_GET['checkavailability'])) {
    Html::popHeader(__('Availability'));
 
-   Planning::checkAvailability($_GET);
+   PluginPlanningPlanning::checkAvailability($_GET);
    Html::popFooter();
-
+   
 } else if (isset($_GET['genical'])) {
    if (isset($_GET['token'])) {
       // Check user token
@@ -77,7 +80,6 @@ if (isset($_GET['checkavailability'])) {
             Session::initEntityProfiles($user->getID());
             if (isset($_SESSION['glpiprofiles'][$user->fields['profiles_id']])) {
                Session::changeProfile($user->fields['profiles_id']);
-
             } else {
                Session::changeProfile(key($_SESSION['glpiprofiles']));
             }
@@ -93,13 +95,16 @@ if (isset($_GET['checkavailability'])) {
             if ($_GET["gID"] === 'mine') {
                $ismine = true;
             } else {
-               $entities = Profile_User::getUserEntitiesForRight($user->getID(),
-                                                                 Planning::$rightname,
-                                                                 Planning::READGROUP);
+               $entities = Profile_User::getUserEntitiesForRight(
+                  $user->getID(),
+                  PluginPlanningPlanning::$rightname,
+                  PluginPlanningPlanning::READGROUP
+               );
                $groups   = Group_User::getUserGroups($user->getID());
                foreach ($groups as $group) {
                   if (($_GET["gID"] == $group['id'])
-                      && in_array($group['entities_id'], $entities)) {
+                     && in_array($group['entities_id'], $entities)
+                  ) {
                      $ismine = true;
                   }
                }
@@ -110,9 +115,11 @@ if (isset($_GET['checkavailability'])) {
          // If not mine check global right
          if (!$ismine) {
             // First check user
-            $entities = Profile_User::getUserEntitiesForRight($user->getID(),
-                                                              Planning::$rightname,
-                                                              Planning::READALL);
+            $entities = Profile_User::getUserEntitiesForRight(
+               $user->getID(),
+               PluginPlanningPlanning::$rightname,
+               PluginPlanningPlanning::READALL
+            );
             if ($_GET["uID"]) {
                $userentities = Profile_User::getUserEntities($user->getID());
                $intersect    = array_intersect($entities, $userentities);
@@ -132,7 +139,7 @@ if (isset($_GET['checkavailability'])) {
          }
 
          if ($ismine || $canview) {
-            Planning::generateIcal($_GET["uID"], $_GET["gID"], $_GET["limititemtype"]);
+            PluginPlanningPlanning::generateIcal($_GET["uID"], $_GET["gID"], $_GET["limititemtype"]);
             Session::destroy();
          }
       }
@@ -140,15 +147,15 @@ if (isset($_GET['checkavailability'])) {
 } else {
    Html::header(__('Planning'), $_SERVER['PHP_SELF'], "helpdesk", "planning");
 
-   Session::checkRightsOr('planning', [Planning::READALL, Planning::READMY]);
+   Session::checkRightsOr('planning', [PluginPlanningPlanning::READALL, PluginPlanningPlanning::READMY]);
 
    if (!isset($_GET["date"]) || empty($_GET["date"])) {
-      $_GET["date"] = strftime("%Y-%m-%d");
+      $_GET["date"] = date("%Y-%m-%d");
    }
    if (!isset($_GET["type"])) {
       $_GET["type"] = "week";
    }
-   $planning = new Planning();
+   $planning = new PluginPlanningPlanning();
    $planning->display($_GET);
 
    Html::footer();
